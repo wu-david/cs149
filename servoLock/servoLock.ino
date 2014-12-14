@@ -1,30 +1,55 @@
+#include <SoftwareSerial.h>
 #include <Servo.h>
 
+/* pin definitions
+ * 5 - BT RX-1
+ * 6 - BT TX-0
+ * 9 - Servo
+ */
+int rx = 5;
+int tx = 6;
 int servoPin = 9;
 
-Servo myservo;
-
-int val;
-
+/* declarations */
+Servo lockServo;
+SoftwareSerial bluetooth(tx, rx);
+String dataFromBT;
+ 
 void setup() {
-  myservo.attach(servoPin);
-  myservo.write(90);  // set servo to mid-point
+  /* servo setup */
+  lockServo.attach(servoPin);
+  lockServo.write(90);
+  
+  /* serial monitor setup */
   Serial.begin(9600);
-  Serial.println("ready");
-}
+  Serial.println("Serial begins... ");
 
+  /* bluetooth setup */
+  bluetooth.begin(115200);
+  dataFromBT = "";
+}
+ 
 void loop() {
-  if (Serial) {
-    val = Serial.read();
-    if (val == '2') {
-      myservo.write(90);
-      delay(20);
+  while (bluetooth.available()) {
+    char received = bluetooth.read();
+    Serial.println("Got int: " + String((byte)received));
+    dataFromBT.concat(String(received));
+    
+    if (received == ',') {
+      Serial.println("Arduino Received: " +  dataFromBT);  
+      dataFromBT = "";
+    } else {
+      if (dataFromBT == "off") {
+        Serial.println("turning to 90");
+        lockServo.write(90); // turn to 90
+        delay(20);
+        dataFromBT = "";
+      } else if (dataFromBT == "on") {
+        Serial.println("turning to 0");
+        lockServo.write(0); // turn to 0
+        delay(20);
+        dataFromBT = "";
+      }
     }
-    if (val == '1') {
-      myservo.write(0);
-      delay(20);
-    }
-  }
+  }  
 }
-
-
