@@ -1,23 +1,32 @@
 #include <SoftwareSerial.h>
 #include <Servo.h>
+#include <IRremote.h>
 
 /* pin definitions
+ * 3 - IR TX
  * 5 - BT RX-1
  * 6 - BT TX-0
  * 9 - Servo
+ * 11 - IR RX
+ * 13 - LED
  */
-int rx = 5;
-int tx = 6;
-int servoPin = 9;
+#define IRTXPIN 3
+#define BTRXPIN 5
+#define BTTXPIN 6
+#define SERVOPIN 9
+#define IRRXPIN 11
+#define LEDPIN 13
+
 
 /* declarations */
 Servo lockServo;
-SoftwareSerial bluetooth(tx, rx);
+SoftwareSerial bluetooth(BTTXPIN, BTRXPIN);
 String dataFromBT;
+IRsend irsend;
  
 void setup() {
   /* servo setup */
-  lockServo.attach(servoPin);
+  lockServo.attach(SERVOPIN);
   lockServo.write(90);
   
   /* serial monitor setup */
@@ -27,9 +36,16 @@ void setup() {
   /* bluetooth setup */
   bluetooth.begin(115200);
   dataFromBT = "";
+  
+  /* ir setup */
+  pinMode(IRRXPIN, INPUT);
+  pinMode(LEDPIN, OUTPUT);
+  irsend.enableIROut(38);
+  irsend.mark(0);
 }
  
 void loop() {
+  digitalWrite(LEDPIN, !digitalRead(IRRXPIN));
   while (bluetooth.available()) {
     char received = bluetooth.read();
     Serial.println("Got int: " + String((byte)received));
