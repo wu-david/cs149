@@ -11,6 +11,7 @@
  * 5 - BT RX-1
  * 6 - BT TX-0
  * 9 - Servo
+ * 10 - Gun switch
  * 11 - IR RX
  * 13 - LED
  * A4 - Accelerometer SDA
@@ -20,6 +21,7 @@
 #define BTRXPIN 5
 #define BTTXPIN 6
 #define SERVOPIN 9
+#define GUNSWITCHPIN 10
 #define IRRXPIN 11
 #define LEDPIN 13
 
@@ -56,6 +58,10 @@ void setup() {
     Serial.println(F("LSM303 not detected"));
     while(1);
   }
+  
+  /* rev the gun */
+  pinMode(GUNSWITCHPIN, OUTPUT);
+  analogWrite(GUNSWITCHPIN, 255);
 }
  
 void loop() {
