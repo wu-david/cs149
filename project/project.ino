@@ -58,8 +58,8 @@ String msg = "";
 const unsigned long LOCK_TO = 10000;
 const unsigned long GUN_TO = 5000;
 const unsigned long FIRING_TO = 5000;
-const int SERVO_LOCK = 90;
-const int SERVO_UNLOCK = 0;
+const int SERVO_LOCK = 0;
+const int SERVO_UNLOCK = 90;
 const int IR_TRIPPED = 1;
 const int IR_NOT_TRIPPED = 0;
 const int PEWPEW = 255;
@@ -69,7 +69,7 @@ const int ACCEL_THRESHOLD = 25;
 void setup() {
   /* servo setup */
   lockServo.attach(SERVOPIN);
-  lockServo.write(90);
+  lockServo.write(SERVO_LOCK);
   
   /* serial monitor setup */
   //Serial.begin(9600);
@@ -140,7 +140,7 @@ void loop() {
       while (Serial.available()) {
         char received = Serial.read();
         if (received == ',') {
-          validateKey(dataFromBT) ? lockState = unlocking : lockState = locked;
+          validateKey(dataFromBT, "locked") ? lockState = unlocking : lockState = locked;
           dataFromBT = "";
           break;
         }
@@ -151,7 +151,7 @@ void loop() {
       while (Serial.available()) {
         char received = Serial.read();
         if (received == ',') {
-          validateKey(dataFromBT) ? lockState = locking : lockState = unlocked;
+          validateKey(dataFromBT, "unlocked") ? lockState = locking : lockState = unlocked;
           dataFromBT = "";
           break;
         }
@@ -185,7 +185,6 @@ void loop() {
       analogWrite(GUNSWITCHPIN, PEWPEW);
       break;
     case validate:
-      validated = validateKey(dataFromBT);
       break;
   }
   delay(50);
@@ -195,8 +194,14 @@ double calculate(float x, float y, float z) {
   return sqrt((x*x)+(y*y)+(z*z));
 }
 
-boolean validateKey(String msg) {
-  // TODO: Treat on and off differently
-  if (msg == "on" || msg == "off") return true;
+boolean validateKey(String msg, String type) {
+  if (type == "unlocked") {
+    //TODO: Change to RSA
+    if (msg == "lock 1234321") return true;
+  }
+  if (type == "locked") {
+    //TODO: Change to RSA
+    if (msg == "unlock 1234321") return true;
+  }
   return false;
 }
